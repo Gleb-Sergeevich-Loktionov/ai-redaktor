@@ -1,0 +1,58 @@
+"""Сборка промпта ядра. Чистые функции, без сети.
+
+Структура: системная инструкция (отдельно) + стабильный блок (правила + словарь +
+пустой слот ТОВ) + текст пользователя. Формат ответа задаёт `output_format` в core.
+"""
+from __future__ import annotations
+
+SYSTEM = (
+    "Ты — редактор русскоязычного текста. Исправь орфографию, пунктуацию и грамматику. "
+    "Найди неоправданные англицизмы и замени их русскими аналогами прямо в тексте. "
+    "Сохрани смысл и авторский голос; не переписывай без необходимости. "
+    "Поле comments — опционально."
+)
+
+# Спящий слот: ТОВ/стратегия подключаются сюда позже, ядро не переписывается.
+TOV_SLOT = ""
+
+
+def _glossary_block(glossary: dict) -> str:
+    def fmt(items: list) -> str:
+        return "\n".join(
+            f"- {it['term']} → {it['replace']}"
+            + (f"  ({it['note']})" if it.get("note") else "")
+            for it in items
+        )
+
+    return (
+        "Заменять всегда:\n"
+        + fmt(glossary["replace_always"])
+        + "\n\nЗаменять с оглядкой на контекст (можно оставить, если уместно):\n"
+        + fmt(glossary["context_dependent"])
+    )
+
+
+def build_messages(text: str, rules: str, glossary: dict) -> list:
+    """Собрать messages для одного вызова Claude.
+
+    Стабильный префикс (правила + словарь + слот ТОВ) помечен cache_control —
+    кандидат на prompt caching (чтения ~0.1x), если префикс превышает мин. размер кэша.
+    """
+    stable = (
+        f"# Правила стиля\n{rules}\n\n"
+        f"# Словарь англицизмов\n{_glossary_block(glossary)}\n\n"
+        f"# ТОВ/стратегия\n{TOV_SLOT or '(пока не заданы)'}"
+    )
+    return [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": stable,
+                    "cache_control": {"type": "ephemeral"},
+                },
+                {"type": "text", "text": f"# Текст для редактуры\n{text}"},
+            ],
+        }
+    ]

@@ -1,0 +1,15 @@
+# Telegram-адаптер (async, v20+)
+python-telegram-bot>=22,<23
+
+# Вызов модели. Нужна версия с messages.parse / output_config (structured output).
+# Если в установленной версии их нет — core.py использует raw json_schema fallback.
+anthropic>=0.40
+
+# Контракт ядра (frozen-модели, валидация structured output)
+pydantic>=2
+
+# Извлечение текста из .docx/.odt/.rtf (нужен системный бинарь pandoc >= 2.14.2)
+pypandoc
+
+# Чтение .env
+python-dotenv
