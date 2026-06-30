@@ -8,6 +8,11 @@ GLOSSARY = {
 }
 
 
+def test_system_requires_comments():
+    assert "comments" in prompts.SYSTEM
+    assert "опционально" not in prompts.SYSTEM
+
+
 def test_build_messages_structure():
     msgs = prompts.build_messages("привет мир", "ПРАВИЛА-СТИЛЯ", GLOSSARY)
     assert len(msgs) == 1 and msgs[0]["role"] == "user"

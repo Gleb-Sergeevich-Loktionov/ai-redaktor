@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from typing import List, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
-CommentType = Literal["ortho", "punct", "grammar", "anglicism", "style"]
+CommentType = Literal["ortho", "punct", "grammar", "anglicism", "style", "logic"]
 
 
 class Comment(BaseModel):
@@ -31,4 +31,4 @@ class EditResult(BaseModel):
     model_config = ConfigDict(frozen=True)
     edited_text: str
     summary: Summary
-    comments: List[Comment] = Field(default_factory=list)   # опц., для разбора
+    comments: List[Comment]   # перечень изъянов — обязательная выдача

@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 START_MSG = (
     "Пришлите текст или файл (.txt .md .csv .docx .odt .rtf) — "
-    "отредактирую и верну исправленный текст + краткое саммари."
+    "отредактирую и верну исправленный текст, перечень изъянов и краткое саммари."
 )
 
 
@@ -75,6 +75,14 @@ async def _process_and_reply(update: Update, text: str, deps: Deps) -> None:
     buf, name = render.render_file(result)
     await update.message.reply_document(document=buf, filename=name)
     await update.message.reply_text(render.render_summary(result))
+
+    # Перечень изъянов: коротким — сообщением, длинным — отдельным файлом.
+    flaws_text, flaws_file = render.render_comments(result)
+    if flaws_file is not None:
+        flaws_buf, flaws_name = flaws_file
+        await update.message.reply_document(document=flaws_buf, filename=flaws_name)
+    if flaws_text is not None:
+        await update.message.reply_text(flaws_text)
 
 
 async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE, deps: Deps) -> None:

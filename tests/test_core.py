@@ -5,11 +5,12 @@ import httpx
 import pytest
 
 from src import core
-from src.models import EditResult, Summary
+from src.models import Comment, EditResult, Summary
 
 VALID = EditResult(
     edited_text="ок",
     summary=Summary(fixes_total=1, anglicisms_replaced=[], style_notes=[]),
+    comments=[Comment(type="ortho", fragment="ока", change="ок", reason="опечатка")],
 )
 GLOSSARY = {"replace_always": [], "context_dependent": []}
 
