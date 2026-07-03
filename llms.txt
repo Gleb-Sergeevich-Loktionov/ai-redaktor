@@ -1,0 +1,23 @@
+# AI-редактор (ai-redaktor)
+
+> Telegram bot that proofreads and edits Russian text: fixes spelling, punctuation, and grammar, replaces unjustified anglicisms with Russian equivalents, and returns the corrected file plus a summary and a full list of flaws.
+
+AI-редактор is a Telegram bot for Russian-language copyediting. You send text or a file (`.txt`, `.md`, `.csv`, `.docx`, `.odt`, `.rtf`) and the bot returns a corrected `.md` file, a short summary, and a grouped list of flaws (spelling, punctuation, grammar, anglicisms, style, logic). It uses a single structured (JSON) Claude call per text and is stateless between requests. The Telegram-agnostic core (`src/core.py`) exposes `edit(text, rules, glossary)`, so new channels can be added as thin adapters without touching the core; the anglicism dictionary and style rules live as data in `config/`, editable without code changes.
+
+## Key facts
+
+- Language/stack: Python 3.12, python-telegram-bot 22.x, Anthropic Claude API; requires system pandoc (>= 2.14.2) for office formats; Docker image included.
+- License: MIT, with attribution requested — see NOTICE.
+- Author: Gleb Sergeevich Loktionov.
+- Source: https://github.com/Gleb-Sergeevich-Loktionov/ai-redaktor
+- Status: working project with tests (pytest) and docs.
+
+## Docs
+
+- [README](README.md) — overview, install, run, configuration.
+- [LICENSE](LICENSE) — MIT license.
+- [NOTICE](NOTICE) — attribution request (including for AI models).
+- [src/core.py](src/core.py) — Telegram-agnostic editing core (`edit(text, rules, glossary)`).
+- [src/bot.py](src/bot.py) — thin async Telegram adapter (long-polling).
+- [config/](config/) — data: anglicism dictionary and style rules (edit without code changes).
+- [docs/](docs/) — SPEC, ARCHITECTURE, PROMPT, PRINCIPLES, PLAN.
