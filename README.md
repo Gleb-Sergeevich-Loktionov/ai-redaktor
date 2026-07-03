@@ -7,6 +7,7 @@ Telegram-бот для корректуры и редактуры русског
 изъянов** по каждой правке.
 
 <p>
+  <a href="https://github.com/Gleb-Sergeevich-Loktionov/ai-redaktor/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Gleb-Sergeevich-Loktionov/ai-redaktor/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.12-blue">
   <img alt="python-telegram-bot" src="https://img.shields.io/badge/python--telegram--bot-22.x-2CA5E0">
   <img alt="Anthropic" src="https://img.shields.io/badge/Anthropic-Claude-black">
