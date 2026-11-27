@@ -1,18 +1,33 @@
-# AI-редактор — Telegram-бот
+# ai-redaktor
 
-Telegram-бот для корректуры и редактуры русского текста. Присылаете **текст или файл**
-(`.txt`, `.md`, `.csv`, `.docx`, `.odt`, `.rtf`) — бот исправляет орфографию, пунктуацию и
-грамматику, заменяет неоправданные англицизмы русскими аналогами, делает лёгкую стилевую
-правку и возвращает **исправленный текст файлом**, краткое **саммари** и полный **перечень
-изъянов** по каждой правке.
+Proofread Russian text and documents in Telegram, returning corrected Markdown and an itemized edit report.
 
-<p>
-  <a href="https://github.com/Gleb-Sergeevich-Loktionov/ai-redaktor/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Gleb-Sergeevich-Loktionov/ai-redaktor/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.12-blue">
-  <img alt="python-telegram-bot" src="https://img.shields.io/badge/python--telegram--bot-22.x-2CA5E0">
-  <img alt="Anthropic" src="https://img.shields.io/badge/Anthropic-Claude-black">
-  <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green">
-</p>
+[![CI](https://github.com/Gleb-Sergeevich-Loktionov/ai-redaktor/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/Gleb-Sergeevich-Loktionov/ai-redaktor/actions/workflows/ci.yml) ![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square) ![License MIT](https://img.shields.io/badge/License-MIT-555555?style=flat-square) ![python-telegram-bot 22.x](https://img.shields.io/badge/python--telegram--bot-22.x-2CA5E0?style=flat-square) ![Anthropic Claude](https://img.shields.io/badge/Anthropic-Claude-333333?style=flat-square) ![pandoc documents](https://img.shields.io/badge/pandoc-documents-555555?style=flat-square)
+
+## Key Engineering Highlights
+
+- The Telegram adapter checks `ALLOWED_USER_IDS` when configured and enforces character and file-size limits before calling the editing core.
+- Plain-text extraction supports `.txt`, `.md`, and `.csv`. Pandoc converts `.docx`, `.odt`, and `.rtf` to Markdown.
+- The prompt uses `config/rules.md` and `config/anglicisms.json` and marks the stable prefix for ephemeral caching.
+- Each edit uses one Claude request. The core validates output with Pydantic v2 through `messages.parse`, or uses strict JSON Schema when that SDK method is unavailable.
+- The renderer produces `corrected.md`, a summary, and an issue list inline or as `flaws.md`. CI runs 33 pytest tests including pandoc extraction.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    TG["Telegram / python-telegram-bot"] --> Guard["ALLOWED_USER_IDS and input limits"]
+    Guard -->|uploaded file| Extract["Document extractor / plain text or pandoc"]
+    Guard -->|message text| Prompt["Prompt builder / ephemeral prefix caching"]
+    Extract --> Prompt
+    Rules["rules.md and anglicisms.json"] --> Prompt
+    Prompt --> Claude["Anthropic Claude / one edit call"]
+    Claude --> Parsed["messages.parse / Pydantic v2"]
+    Claude -->|SDK without parse| Schema["messages.create / strict JSON Schema"]
+    Schema --> ParsedResult["Validated EditResult"]
+    Parsed --> ParsedResult
+    ParsedResult --> Render["Markdown, summary and flaws renderer"] --> TG
+```
 
 ## Как это работает
 
