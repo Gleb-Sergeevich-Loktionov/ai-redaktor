@@ -1,6 +1,6 @@
 # src/ — реализация
 
-Код пишется сюда. Целевая раскладка модулей — в `docs/ARCHITECTURE.md` (раздел «Целевая раскладка src/»).
+Код сервиса. Схема архитектуры и потоков — в `docs/ARCHITECTURE.md`.
 
 Ключевое:
 - `core.py` — ядро `edit(text, rules, glossary)`; не знает про Telegram.

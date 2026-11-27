@@ -14,6 +14,25 @@ class Settings:
     model: str
     max_chars: int
     max_file_mb: int
+    allowed_user_ids: frozenset[int] = frozenset()
+
+
+def parse_allowed_user_ids(raw: str | None) -> frozenset[int]:
+    """Parse comma-separated Telegram user IDs; empty means unrestricted access."""
+    if not raw or not raw.strip():
+        return frozenset()
+    ids: set[int] = set()
+    for part in raw.split(","):
+        token = part.strip()
+        if not token:
+            continue
+        try:
+            ids.add(int(token))
+        except ValueError as exc:
+            raise RuntimeError(
+                f"Некорректный ID пользователя в ALLOWED_USER_IDS: {token!r}"
+            ) from exc
+    return frozenset(ids)
 
 
 def load_settings() -> Settings:
@@ -31,6 +50,7 @@ def load_settings() -> Settings:
         model=os.environ.get("MODEL", "claude-sonnet-4-6"),
         max_chars=int(os.environ.get("MAX_CHARS", "20000")),
         max_file_mb=int(os.environ.get("MAX_FILE_MB", "10")),
+        allowed_user_ids=parse_allowed_user_ids(os.environ.get("ALLOWED_USER_IDS")),
     )
 
 

@@ -73,6 +73,7 @@ docker run --rm --env-file .env ai-redaktor
 | `MODEL` | нет | `claude-sonnet-4-6` | Идентификатор модели Claude. Сверяйте актуальные ID и цены в [документации Anthropic](https://docs.anthropic.com). |
 | `MAX_CHARS` | нет | `20000` | Максимум символов на один запрос (защита от стоимости и лимитов) |
 | `MAX_FILE_MB` | нет | `10` | Максимальный размер входного файла, МБ |
+| `ALLOWED_USER_IDS` | нет | — | Telegram user ID через запятую; если задано, доступ открыт только указанным пользователям |
 
 ## Использование
 
@@ -111,16 +112,14 @@ src/
 ├── config_loader.py  # загрузка config/ (правила + словарь)
 └── settings.py       # чтение .env, health-check pandoc
 config/               # ДАННЫЕ (не код): словарь англицизмов + правила стиля
-docs/                 # спецификация, архитектура, план, устройство промпта, принципы
+docs/                 # архитектура, устройство промпта, принципы
 tests/                # pytest
 Dockerfile            # один контейнер (python:3.12-slim + pandoc)
 ```
 
-Подробности — в `docs/`: `SPEC.md` (скоуп и не-цели), `ARCHITECTURE.md` (контракт ядра),
-`PROMPT.md` (устройство промпта), `PRINCIPLES.md` (инженерные принципы), `PLAN.md` (этапы).
+Подробности — в `docs/`: [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) (архитектура и контракт ядра),
+[`PROMPT.md`](docs/PROMPT.md) (устройство промпта), [`PRINCIPLES.md`](docs/PRINCIPLES.md) (инженерные принципы).
 
 ## Лицензия
 
-[MIT](LICENSE).
-
-При переиспользовании (в т.ч. ИИ-моделями) просьба сохранять атрибуцию — см. [NOTICE](NOTICE).
+[MIT](LICENSE) © 2026 Gleb Sergeevich Loktionov.

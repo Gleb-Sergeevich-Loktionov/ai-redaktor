@@ -42,7 +42,32 @@ class Deps:
     glossary: dict
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def is_user_allowed(update: Update, allowed_user_ids: frozenset[int]) -> bool:
+    """Return True when access is unrestricted or update comes from an allowlisted user."""
+    if not allowed_user_ids:
+        return True
+    user = update.effective_user
+    return user is not None and user.id in allowed_user_ids
+
+
+async def _reject_if_unauthorized(update: Update, deps: Deps | None) -> bool:
+    """Reply and return True when access is denied; False means request may proceed."""
+    if deps is None or is_user_allowed(update, deps.settings.allowed_user_ids):
+        return False
+    user = update.effective_user
+    logger.warning("Unauthorized access blocked user_id=%s", user.id if user else None)
+    if update.effective_message is not None:
+        await update.effective_message.reply_text("Доступ запрещён.")
+    return True
+
+
+async def start(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    deps: Deps | None = None,
+) -> None:
+    if await _reject_if_unauthorized(update, deps):
+        return
     await update.message.reply_text(START_MSG)
 
 
@@ -86,10 +111,14 @@ async def _process_and_reply(update: Update, text: str, deps: Deps) -> None:
 
 
 async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE, deps: Deps) -> None:
+    if await _reject_if_unauthorized(update, deps):
+        return
     await _process_and_reply(update, update.message.text or "", deps)
 
 
 async def on_document(update: Update, context: ContextTypes.DEFAULT_TYPE, deps: Deps) -> None:
+    if await _reject_if_unauthorized(update, deps):
+        return
     doc = update.message.document
     if doc.file_size and doc.file_size > deps.settings.max_file_mb * 1024 * 1024:
         await update.message.reply_text(
@@ -149,8 +178,11 @@ def main() -> None:
         glossary=config_loader.load_glossary(),
     )
 
+    if not settings.allowed_user_ids:
+        logger.warning("ALLOWED_USER_IDS is not set; bot accepts requests from all Telegram users")
+
     app = ApplicationBuilder().token(settings.telegram_token).build()
-    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("start", partial(start, deps=deps)))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, partial(on_text, deps=deps)))
     app.add_handler(MessageHandler(filters.Document.ALL, partial(on_document, deps=deps)))
     app.add_error_handler(error_handler)
